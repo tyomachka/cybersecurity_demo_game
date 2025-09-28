@@ -1,0 +1,279 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
+  <title>Cybersecurity Game</title>
+  <style>
+    :root{
+      --bg:#6f2c91; /* purple-ish */
+      --card:#ffffff;
+      --accent:#ffcf33;
+      --muted:rgba(255,255,255,0.85);
+      --danger:#ff3b30;
+    }
+    html,body{height:100%;margin:0;font-family:Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;}
+    body{
+      background: linear-gradient(180deg, var(--bg) 0%, #32124b 100%);
+      color:var(--muted);
+      display:flex;
+      align-items:flex-start;
+      justify-content:center;
+      padding:28px 16px;
+      -webkit-touch-callout:none;
+      -webkit-user-select:none;
+    }
+
+    .container{
+      width:100%;
+      max-width:420px;
+    }
+
+    header{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      margin-bottom:18px;
+    }
+    .brand{
+      display:flex;
+      gap:10px;
+      align-items:center;
+    }
+    .logo{
+      width:46px;height:46px;border-radius:10px;background:linear-gradient(135deg,#ff7fbf,#7a44ff);
+      display:flex;align-items:center;justify-content:center;font-weight:700;font-size:20px;color:white;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.25);
+    }
+    .title{
+      font-size:18px;font-weight:700;color:white;
+    }
+    .demo-tag{
+      font-size:11px;padding:6px 8px;border-radius:999px;background:rgba(255,255,255,0.12);color:white;
+      border:1px dashed rgba(255,255,255,0.08);
+    }
+
+    .card{
+      background:rgba(255,255,255,0.06);
+      border-radius:16px;padding:20px;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.35);
+      color:white;
+    }
+
+    .hint{font-size:13px;color:rgba(255,255,255,0.9);margin-bottom:12px;}
+    .pin-input{
+      display:flex;gap:8px;margin:12px 0 18px;
+    }
+    .pin-input input{
+      flex:1;background:rgba(255,255,255,0.06);border:none;padding:18px;border-radius:10px;
+      text-align:center;font-size:18px;color:white;font-weight:700;
+      outline:none;
+    }
+    .join-btn{
+      width:100%;padding:14px;border-radius:12px;border:none;font-weight:800;font-size:16px;
+      background:linear-gradient(90deg,var(--accent),#ff9f1a);color:#2a0b00;
+      box-shadow: 0 8px 18px rgba(0,0,0,0.25);
+    }
+
+    .small{
+      font-size:12px;color:rgba(255,255,255,0.75);margin-top:12px;text-align:center;
+    }
+
+    /* overlay */
+    .overlay{
+      position:fixed;inset:0;display:flex;align-items:center;justify-content:center;
+      background:rgba(0,0,0,0.5);backdrop-filter: blur(3px);opacity:0;pointer-events:none;transition:opacity .28s ease;
+    }
+    .overlay.show{opacity:1;pointer-events:auto;}
+    .popup{
+      width:92%;max-width:420px;background:var(--card);color:#1b1220;border-radius:14px;padding:18px;text-align:center;
+      box-shadow:0 18px 60px rgba(0,0,0,0.4);
+    }
+    .popup .headline{font-size:20px;font-weight:900;margin-bottom:6px;}
+    .popup .sub{font-size:15px;color:#333;margin-bottom:12px;}
+    .popup .action{
+      display:flex;gap:10px;justify-content:center;
+    }
+    .btn{
+      padding:12px 16px;border-radius:10px;border:none;font-weight:700;font-size:14px;
+    }
+    .btn-danger{background:var(--danger);color:white;}
+    .btn-primary{background:#2b2be0;color:white;}
+
+    /* Learn more modal */
+    .learn{
+      display:none; /* hidden by default */
+    }
+    .learn.show{display:block;}
+    .learn .content{max-height:60vh;overflow:auto;text-align:left;padding:8px 0;}
+    .learn h3{margin:0 0 8px 0;}
+    .learn p{margin:6px 0 12px 0;color:#333;line-height:1.4;font-size:14px;}
+
+    /* small fine print on top of popup to stress demo */
+    .demo-note{font-size:12px;color:#666;margin-top:8px;}
+
+    /* mobile-only adjustments */
+    @media(min-width:600px){
+      body{align-items:center;padding:40px;}
+      .container{max-width:420px;}
+    }
+
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="brand">
+        <div class="logo">CG</div>
+        <div>
+          <div class="title">Cybersecurity Game</div>
+        </div>
+      </div>
+      <div class="demo-tag">DEMO</div>
+    </header>
+
+    <main class="card" role="main" aria-labelledby="game-title">
+      <div id="game-title" class="hint">Enter the game PIN to join the demo</div>
+
+      <div class="pin-input" aria-hidden="false">
+        <input type="text" maxlength="6" placeholder="Enter PIN" id="pin" inputmode="numeric" />
+      </div>
+
+      <button class="join-btn" id="joinBtn">JOIN GAME</button>
+
+      <div class="small">Tip: This page is part of a cybersecurity awareness demo. <strong>Do not enter real credentials</strong>.</div>
+    </main>
+  </div>
+
+  <!-- Dramatic overlay that appears after delay -->
+  <div class="overlay" id="overlay" role="dialog" aria-modal="true" aria-hidden="true">
+    <div class="popup" id="popup">
+      <div class="headline">🚨 Your phone has been hacked!</div>
+      <div class="sub">Just kidding — this is a simulation.</div>
+      <div class="demo-note">This message intentionally appears after scanning an unknown QR code to demonstrate risk.</div>
+
+      <div class="action" style="margin-top:14px;">
+        <button class="btn btn-danger" id="learnBtn">Learn More</button>
+        <button class="btn" id="dismissBtn">Dismiss</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Learn more modal (embedded inside overlay to keep focus) -->
+  <div class="overlay" id="learnOverlay" style="background:rgba(0,0,0,0.6);opacity:0;pointer-events:none;">
+    <div class="popup learn" id="learnPopup" role="document" aria-hidden="true">
+      <h3>Why this is risky</h3>
+      <div class="content">
+        <p>QR codes can link to malicious websites that attempt to steal personal data, install malware, or trick you into giving away credentials. QR codes are convenient — but that convenience can be abused.</p>
+        <p><strong>How to stay safe:</strong></p>
+        <ul>
+          <li>Only scan QR codes from trusted sources.</li>
+          <li>Preview the link before opening (your phone often shows the URL first).</li>
+          <li>Don’t enter credentials on sites you don’t recognize.</li>
+          <li>Keep your device updated and use a screen lock.</li>
+        </ul>
+        <p style="font-size:13px;color:#555">This demo is educational only — no data is collected and nothing harmful happens.</p>
+      </div>
+
+      <div style="display:flex;gap:10px;justify-content:center;margin-top:8px;">
+        <button class="btn btn-primary" id="closeLearn">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Mobile-only guard: warn if opened on large desktop (but still works)
+    (function(){
+      if(window.innerWidth > 900){
+        // show small note
+        var note = document.createElement('div');
+        note.style.position='fixed';note.style.left='16px';note.style.bottom='16px';note.style.zIndex=9999;
+        note.style.padding='8px 12px';note.style.borderRadius='10px';note.style.background='rgba(0,0,0,0.6)';
+        note.style.color='white';note.style.fontSize='13px';
+        note.textContent = 'Designed for mobile viewing — best experience on phone.';
+        document.body.appendChild(note);
+      }
+    })();
+
+    // After 7 seconds from "scan" show dramatic message
+    var SHOW_AFTER = 7000; // 7 seconds
+    var overlay = document.getElementById('overlay');
+    var learnOverlay = document.getElementById('learnOverlay');
+    var popup = document.getElementById('popup');
+    var joinBtn = document.getElementById('joinBtn');
+    var pin = document.getElementById('pin');
+
+    function showDramatic(){
+      overlay.classList.add('show');
+      overlay.setAttribute('aria-hidden','false');
+    }
+
+    // Start timer when the user interacts (tap) or after page load if no interaction in 1s
+    var started=false;
+    function startTimer(){
+      if(started) return;
+      started = true;
+      setTimeout(showDramatic, SHOW_AFTER);
+    }
+
+    // Start when join clicked or input focused
+    joinBtn.addEventListener('click', function(e){
+      startTimer();
+      // Simulate normal join behaviour (non-functional demo)
+      joinBtn.textContent = 'Waiting...';
+      joinBtn.disabled = true;
+      setTimeout(function(){
+        joinBtn.textContent = 'JOIN GAME';
+        joinBtn.disabled = false;
+      },1500);
+    });
+    pin.addEventListener('focus', startTimer);
+    pin.addEventListener('input', startTimer);
+
+    // Also start 1 second after page load to mimic "scan opened link"
+    window.addEventListener('load', function(){
+      setTimeout(startTimer, 1000);
+    });
+
+    // Dismiss and Learn buttons
+    document.getElementById('dismissBtn').addEventListener('click', function(){
+      overlay.classList.remove('show');
+      overlay.setAttribute('aria-hidden','true');
+    });
+    document.getElementById('learnBtn').addEventListener('click', function(){
+      // hide main overlay and show learn overlay
+      overlay.classList.remove('show');
+      overlay.setAttribute('aria-hidden','true');
+
+      learnOverlay.classList.add('show');
+      learnOverlay.style.opacity = '1';
+      learnOverlay.style.pointerEvents = 'auto';
+      document.getElementById('learnPopup').classList.add('show');
+      document.getElementById('learnPopup').setAttribute('aria-hidden','false');
+    });
+
+    document.getElementById('closeLearn').addEventListener('click', function(){
+      learnOverlay.classList.remove('show');
+      learnOverlay.style.opacity = '0';
+      learnOverlay.style.pointerEvents = 'none';
+      document.getElementById('learnPopup').classList.remove('show');
+      document.getElementById('learnPopup').setAttribute('aria-hidden','true');
+    });
+
+    // Accessibility: trap back button / ESC to close overlays
+    document.addEventListener('keydown', function(e){
+      if(e.key === 'Escape'){
+        if(learnOverlay.classList.contains('show')){
+          document.getElementById('closeLearn').click();
+        } else if(overlay.classList.contains('show')){
+          document.getElementById('dismissBtn').click();
+        }
+      }
+    });
+
+    // Prevent form autocomplete / sending data
+    window.addEventListener('submit', function(e){ e.preventDefault(); });
+
+  </script>
+</body>
+</html>
